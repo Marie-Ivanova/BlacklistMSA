@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mairie de San Andreas — Direction</title>
+  <meta name="description" content="Portail interne de la Mairie de San Andreas">
+  <link rel="icon" href="assets/logo.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <section id="loginView" class="login-shell">
+    <div class="login-card">
+      <img src="assets/logo.png" class="login-logo" alt="Logo de la Mairie de San Andreas">
+      <div class="eyebrow">PORTAIL INTERNE</div>
+      <h1>Mairie de San Andreas</h1>
+      <p class="muted">Accès réservé aux membres autorisés.</p>
+      <form id="loginForm">
+        <label>Adresse e-mail
+          <input id="loginEmail" type="email" autocomplete="username" required>
+        </label>
+        <label>Mot de passe
+          <input id="loginPassword" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="btn primary full" type="submit">Se connecter</button>
+      </form>
+      <p id="loginError" class="error"></p>
+    </div>
+  </section>
+
+  <div id="appView" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="assets/logo.png" alt="">
+        <div>
+          <strong>Mairie de San Andreas</strong>
+          <span>Portail Direction</span>
+        </div>
+      </div>
+
+      <nav id="mainNav">
+        <button class="nav-item active" data-page="dashboard">⌂ <span>Tableau de bord</span></button>
+        <button class="nav-item" data-page="blacklist">◈ <span>Blacklist</span></button>
+        <button class="nav-item request-nav" data-page="requests">✉ <span>Demandes de Blacklist</span><b id="requestBadge" class="badge hidden">0</b></button>
+        <button class="nav-item admin-nav hidden" data-page="users">♙ <span>Comptes & rôles</span></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="user-mini">
+          <div id="avatar" class="avatar">?</div>
+          <div>
+            <strong id="currentName">Utilisateur</strong>
+            <span id="currentRole">—</span>
+          </div>
+        </div>
+        <button id="logoutBtn" class="nav-item logout">↪ <span>Déconnexion</span></button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">MAIRIE DE SAN ANDREAS</div>
+          <h2 id="pageTitle">Tableau de bord</h2>
+        </div>
+        <div class="top-actions">
+          <span id="statusPill" class="status-pill">Connecté</span>
+        </div>
+      </header>
+
+      <section id="page-dashboard" class="page">
+        <div class="hero">
+          <div>
+            <span class="eyebrow light">ESPACE INTERNE</span>
+            <h3>Bienvenue, <span id="welcomeName">—</span>.</h3>
+            <p>Gérez les informations de la Mairie depuis cet espace sécurisé.</p>
+          </div>
+          <img src="assets/logo.png" alt="">
+        </div>
+
+        <div class="stats">
+          <div class="stat-card"><span>Personnes blacklistées</span><strong id="statBlacklist">0</strong></div>
+          <div class="stat-card"><span>Demandes en attente</span><strong id="statRequests">0</strong></div>
+          <div class="stat-card"><span>Comptes actifs</span><strong id="statUsers">0</strong></div>
+        </div>
+
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel-head"><div><h3>Accès rapides</h3><p>Les fonctions disponibles selon votre rôle.</p></div></div>
+            <div class="quick-actions">
+              <button class="quick" data-page="blacklist"><b>◈</b><span>Consulter la Blacklist</span></button>
+              <button class="quick request-quick" data-page="requests"><b>✉</b><span>Demandes de Blacklist</span></button>
+              <button class="quick admin-quick hidden" data-page="users"><b>♙</b><span>Gérer les comptes</span></button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><div><h3>Rôles</h3><p>Permissions intégrées au portail.</p></div></div>
+            <div class="role-list">
+              <div><span class="role admin">ADMIN</span><span>Gestion complète, comptes et rôles.</span></div>
+              <div><span class="role direction">DIRECTION</span><span>Ajout, modification et suppression de Blacklist.</span></div>
+              <div><span class="role responsable">RESPONSABLE</span><span>Lecture de la Blacklist + demandes.</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-blacklist" class="page hidden">
+        <div class="section-head">
+          <div><h3>Blacklist</h3><p>Liste des personnes actuellement enregistrées.</p></div>
+          <button id="addBlacklistBtn" class="btn primary">+ Ajouter à la Blacklist</button>
+        </div>
+
+        <div class="toolbar">
+          <input id="blacklistSearch" placeholder="Rechercher par nom, prénom ou ID unique…">
+          <button id="refreshBlacklist" class="btn secondary">Actualiser</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Personne</th><th>ID unique</th><th>Raison</th><th>Ajouté par</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="blacklistBody"><tr><td colspan="6" class="empty">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="page-requests" class="page hidden">
+        <div class="section-head">
+          <div><h3>Demandes de Blacklist</h3><p>Les demandes sont envoyées à la Direction pour examen.</p></div>
+          <button id="newRequestBtn" class="btn primary request-only">+ Demander un Blacklist</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Personne</th><th>ID unique</th><th>Motif</th><th>Demandeur</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="requestsBody"><tr><td colspan="7" class="empty">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="page-users" class="page hidden admin-page">
+        <div class="section-head">
+          <div><h3>Comptes & rôles</h3><p>Seul un Administrateur peut gérer les accès.</p></div>
+          <button id="newUserBtn" class="btn primary">+ Créer un compte</button>
+        </div>
+        <div class="notice">Les changements de rôle sont appliqués immédiatement. Désactiver un compte retire son accès au portail sans supprimer son historique.</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nom affiché</th><th>E-mail</th><th>Rôle</th><th>État</th><th>Créé le</th><th>Actions</th></tr></thead>
+            <tbody id="usersBody"><tr><td colspan="6" class="empty">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close-modal>×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
